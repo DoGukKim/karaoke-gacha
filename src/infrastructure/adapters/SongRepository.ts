@@ -7,7 +7,7 @@ import { z } from 'zod';
 export class SongRepository implements ISongRepository {
   async getRandomSongs(count: number): Promise<Song[]> {
     const { data, error } = await supabaseClient.rpc('get_random_songs', {
-      count,
+      p_count: count,
     });
 
     if (error) throw new Error(error.message);

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { QueryProvider } from '@/infrastructure/providers/QueryProvider';
@@ -15,8 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "노래방 애창곡 뽑기",
-  description: "코노 필수템! 랜덤 노래 뽑기",
+  title: '노래방 애창곡 뽑기',
+  description: '코노 필수템! 랜덤 노래 뽑기',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
