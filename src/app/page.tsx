@@ -1,66 +1,42 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { BottomCTA, Post, Paragraph } from '@toss/tds-mobile';
+import { adaptive } from '@toss/tds-colors';
+import { GachaMachine } from '@/view/widgets/GachaMachine/GachaMachine';
+import { usePrefetchRandomSongs } from '@/features/song';
+import { DEFAULT_RANDOM_SONG_COUNT } from '@/domain/song/model';
+
+const SHAKE_DURATION = 1700;
 
 export default function Home() {
+  const router = useRouter();
+  const [isShaking, setIsShaking] = useState(false);
+  const { prefetch } = usePrefetchRandomSongs(DEFAULT_RANDOM_SONG_COUNT);
+
+  const handleGacha = () => {
+    setIsShaking(true);
+    prefetch();
+
+    setTimeout(() => {
+      router.push('/recommendations');
+    }, SHAKE_DURATION);
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex h-screen w-screen flex-col">
+      <Post.H2 paddingBottom={0} color={adaptive.grey900}>
+        <Paragraph.Text>어떤 노래를 불러볼까요?</Paragraph.Text>
+      </Post.H2>
+
+      <div className="flex w-full flex-auto items-center justify-center pt-5">
+        <GachaMachine state={isShaking ? 'shake' : 'floating'} />
+      </div>
+
+      <BottomCTA.Single onTap={handleGacha} disabled={isShaking}>
+        {isShaking ? '뽑는 중...' : '노래 뽑기'}
+      </BottomCTA.Single>
     </div>
   );
 }
