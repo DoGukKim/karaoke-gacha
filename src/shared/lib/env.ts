@@ -3,7 +3,7 @@ import { z } from 'zod';
 const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(), // 서버 전용 (클라이언트에서는 undefined)
 });
 
 function validateEnv() {
