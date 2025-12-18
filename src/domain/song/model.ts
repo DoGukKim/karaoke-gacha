@@ -6,4 +6,4 @@ export interface Song {
   spotifyUrl: string;
 }
 
-export const DEFAULT_RANDOM_SONG_COUNT = 15;
+export const DEFAULT_RANDOM_SONG_COUNT = 10;

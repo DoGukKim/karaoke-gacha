@@ -1,21 +1,17 @@
 'use client';
 
-import { Result, Skeleton } from '@toss/tds-mobile';
 import type { Song } from '@/domain/song/model';
-import { SongItem } from './SongItem';
 import { SpotifyIcon } from '@/shared/ui/icons';
+import { Result, Skeleton } from '@toss/tds-mobile';
+import { SongItem } from './SongItem';
 
 interface SongListProps {
-  songs: Song[];
+  songs?: Song[];
   isLoading?: boolean;
   error?: Error | null;
 }
 
-export function SongList({ songs, isLoading, error }: SongListProps) {
-  const handleSpotifyClick = (spotifyUrl: string) => {
-    window.open(spotifyUrl, '_blank', 'noopener,noreferrer');
-  };
-
+export function SongList({ songs = [], isLoading, error }: SongListProps) {
   if (isLoading) {
     return <Skeleton />;
   }
@@ -41,10 +37,10 @@ export function SongList({ songs, isLoading, error }: SongListProps) {
   }
 
   return (
-    <div className="w-full overflow-hidden">
+    <div className="h-min-content w-full overflow-hidden">
       <div className="flex w-full flex-col px-5">
         {songs.map((song) => (
-          <SongItem key={song.id} song={song} onSpotifyClick={handleSpotifyClick} />
+          <SongItem key={song.id} song={song} />
         ))}
       </div>
 

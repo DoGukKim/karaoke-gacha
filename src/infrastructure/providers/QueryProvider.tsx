@@ -1,32 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { getQueryClient } from '../lib/tanstackQuery/client';
+import dynamic from 'next/dynamic';
+
+/**
+ * Query Provider
+ * - 클라이언트에서만 렌더링 (SSR 비활성화)
+ * - sessionStorage에 쿼리 캐시를 영속화
+ * - PersistQueryClientProvider가 QueryClientProvider 역할도 수행
+ */
+const PersistQueryProvider = dynamic(
+  () => import('./PersistQueryProvider').then((m) => m.PersistQueryProvider),
+  { ssr: false },
+);
 
 export function QueryProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => getQueryClient());
-  const [persister, setPersister] = useState<ReturnType<
-    typeof createSyncStoragePersister
-  > | null>(null);
-
-  useEffect(() => {
-    setPersister(
-      createSyncStoragePersister({
-        storage: window.sessionStorage,
-      })
-    );
-  }, []);
-
-  if (!persister) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
-  }
-
-  return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-      {children}
-    </PersistQueryClientProvider>
-  );
+  return <PersistQueryProvider>{children}</PersistQueryProvider>;
 }

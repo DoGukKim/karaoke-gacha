@@ -7,12 +7,11 @@ import { MarqueeText } from '@/shared/ui';
 
 interface SongItemProps {
   song: Song;
-  onSpotifyClick?: (spotifyUrl: string) => void;
 }
 
-export function SongItem({ song, onSpotifyClick }: SongItemProps) {
+export function SongItem({ song }: SongItemProps) {
   const handleClick = () => {
-    onSpotifyClick?.(song.spotifyUrl);
+    window.open(song.spotifyUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
