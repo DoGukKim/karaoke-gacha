@@ -247,15 +247,50 @@ pnpm seed clear                   # 모든 노래 삭제
 
 ## 환경 변수
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=         # Supabase 프로젝트 URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Supabase 익명 키
-SUPABASE_SERVICE_ROLE_KEY=        # Supabase 서비스 역할 키
+`.env.example` 파일을 `.env.local`로 복사 후 값 설정:
 
-# seed 스크립트용 (선택)
+```bash
+cp .env.example .env.local
+```
+
+```env
+# Supabase (필수)
+NEXT_PUBLIC_SUPABASE_URL=         # Supabase 프로젝트 URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Supabase 익명 키 (클라이언트 노출됨)
+
+# 서버 전용 (seed 스크립트용)
+SUPABASE_SERVICE_ROLE_KEY=        # Supabase 서비스 역할 키 (절대 노출 금지)
+
+# Spotify API (seed 스크립트용)
 SPOTIFY_CLIENT_ID=                # Spotify API 클라이언트 ID
 SPOTIFY_CLIENT_SECRET=            # Spotify API 시크릿
 ```
+
+> ⚠️ `NEXT_PUBLIC_` 접두사가 붙은 변수는 클라이언트에 노출됩니다. 
+> Supabase RLS 설정을 통해 anon 키로 접근 가능한 범위를 제한하세요.
+
+## Next.js 설정 (`next.config.ts`)
+
+### allowedDevOrigins
+
+개발 환경에서 다른 호스트/IP에서 Next.js 개발 서버에 접근할 수 있도록 허용:
+
+```typescript
+allowedDevOrigins: ['192.168.0.43', 'localhost'],
+```
+
+- Granite + React Native 환경에서 모바일 기기/시뮬레이터가 개발 서버에 접근할 때 필요
+- 호스트 이름만 지정하면 해당 호스트의 모든 포트에서 접근 허용
+- 설정하지 않으면 `Blocked cross-origin request` 경고 발생
+
+### 정적 빌드 설정
+
+```typescript
+...(isProd && { output: 'export', distDir: 'dist/web' }),
+```
+
+- 프로덕션 빌드 시 정적 HTML 내보내기 (`output: 'export'`)
+- 토스 미니앱 배포를 위한 `dist/web` 출력 디렉토리
 
 ## 외부 연동
 
@@ -263,6 +298,56 @@ SPOTIFY_CLIENT_SECRET=            # Spotify API 시크릿
 
 - **Database**: `songs` 테이블 + `get_random_songs(p_count)` RPC 함수
 - **Storage**: CDN으로 이미지 호스팅 (가챠 머신, 로고)
+- **Security**: RLS 활성화, anon 사용자 SELECT만 허용
+
+#### 데이터베이스 스키마
+
+```sql
+-- songs 테이블
+CREATE TABLE songs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL,
+  artist text NOT NULL,
+  artwork_url text NOT NULL,
+  spotify_url text NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE (title, artist)
+);
+
+-- RLS 설정
+ALTER TABLE songs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can read songs"
+  ON songs FOR SELECT
+  USING (true);
+
+-- 랜덤 노래 RPC 함수
+CREATE OR REPLACE FUNCTION public.get_random_songs(p_count int)
+  RETURNS SETOF public.songs
+  LANGUAGE sql
+  SECURITY DEFINER
+  SET search_path = public, pg_catalog
+AS $$
+  SELECT * FROM public.songs ORDER BY random() LIMIT p_count;
+$$;
+
+-- anon 사용자 함수 실행 권한
+GRANT EXECUTE ON FUNCTION public.get_random_songs(int) TO anon;
+```
+
+#### 보안 설정
+
+| 항목 | 설정 | 설명 |
+| --- | --- | --- |
+| RLS | ✅ 활성화 | Row Level Security |
+| SELECT 정책 | ✅ 허용 | 읽기만 가능 |
+| INSERT/UPDATE/DELETE | ❌ 차단 | 정책 없음 = anon 불가 |
+| RPC 함수 | SECURITY DEFINER | 함수 소유자 권한으로 실행 |
+
+**왜 REST 대신 RPC를 사용하나?**
+
+- Supabase REST API(PostgREST)는 `ORDER BY RANDOM()` 미지원
+- RPC 함수로 데이터베이스 레벨에서 랜덤 선택 → 효율적
 
 ### Spotify
 
@@ -297,6 +382,8 @@ SPOTIFY_CLIENT_SECRET=            # Spotify API 시크릿
 
 | 용도                  | 경로                                                |
 | --------------------- | --------------------------------------------------- |
+| 환경 변수 예시        | `.env.example`                                      |
+| Next.js 설정          | `next.config.ts`                                    |
 | 도메인 모델           | `src/domain/song/model.ts`                          |
 | Use Case              | `src/features/song/usecase/getRandomSongs.ts`       |
 | Repository 인터페이스 | `src/features/song/ports/repository.ts`             |

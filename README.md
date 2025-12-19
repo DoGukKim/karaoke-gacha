@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎤 노래방 애창곡 뽑기 (Karaoke Gacha)
 
-## Getting Started
+> 토스 미니앱 기반 랜덤 노래 추천 서비스
 
-First, run the development server:
+## 개요
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+코인노래방에서 "뭐 부르지?" 고민을 해결해주는 가챠 스타일 노래 추천 앱입니다.
+
+## 기술 스택
+
+| 분류          | 기술                               |
+| ------------- | ---------------------------------- |
+| Framework     | Next.js 16, React 19, TypeScript 5 |
+| State         | TanStack Query 5, Zustand 5        |
+| Styling       | Tailwind CSS 4, Emotion            |
+| Validation    | Zod 4                              |
+| Backend       | Supabase (PostgreSQL, RPC)         |
+| Design System | @toss/tds-mobile                   |
+
+## 아키텍처
+
+**Clean Architecture + Feature-Sliced Design** 적용
+
+> 테스트 용이성과 인프라 교체 유연성을 위해 레이어 분리
+
+```
+src/
+├── app/              # Pages (Next.js App Router)
+├── domain/           # 순수 도메인 모델
+├── features/         # 기능 모듈 (hooks, ui, usecase, ports)
+├── infrastructure/   # 외부 시스템 연동 (Supabase, DI)
+├── view/             # 복합 UI 위젯
+└── shared/           # 공용 유틸리티
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 주요 기능
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**아키텍처**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Clean Architecture 레이어 분리 (Domain → UseCase → Repository)
+- Port/Adapter 패턴으로 인프라 교체 용이
+- Zod 스키마로 API 응답 검증 + DTO → Domain 매핑
 
-## Learn More
+**최적화**
 
-To learn more about Next.js, take a look at the following resources:
+- Prefetch로 UX 최적화 (애니메이션 중 데이터 로딩)
+- Supabase RPC로 DB 레벨 랜덤 처리
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**기능**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 15곡 랜덤 추천
+- 가챠 머신 UI + 애니메이션 (float, shake)
 
-## Deploy on Vercel
+## 실행 방법
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# 의존성 설치
+pnpm install
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# 환경 변수 설정
+cp .env.example .env.local
+
+# 개발 서버 실행
+pnpm dev
+```
