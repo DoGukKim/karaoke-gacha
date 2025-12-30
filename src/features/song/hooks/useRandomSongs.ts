@@ -1,3 +1,4 @@
+// 리액트 쿼리를 의존하는 것은 원칙상 허용되지 않으나, 상태 관리의 표준 도구로 사용되기 때문에 허용.
 'use client';
 
 import {
@@ -17,7 +18,6 @@ export function useRandomSongs(count: number, options?: UseRandomSongsOptions) {
   return useQuery<Song[], Error>({
     queryKey: songKeys.random(count),
     queryFn: () => getRandomSongsAction(count),
-
     ...options,
   });
 }
