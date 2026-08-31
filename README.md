@@ -6,6 +6,12 @@
 
 코인노래방에서 "뭐 부르지?" 고민을 해결해주는 가챠 스타일 노래 추천 앱입니다.
 
+<p align="center">
+  <img src="public/main-screen.PNG" width="30%" alt="메인 화면" />
+  <span>  </span>
+  <img src="public/songs-screen.PNG" width="30%" alt="추천 결과 화면" />
+</p>
+
 ## 기술 스택
 
 | 분류          | 기술                               |
